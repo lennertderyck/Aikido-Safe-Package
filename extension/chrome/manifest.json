@@ -1,0 +1,26 @@
+{
+  "name": "Aikido Safe Package",
+  "description": "Embeds safety badges on npmjs.com package pages",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": [
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://www.npmjs.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://www.npmjs.com/package/*"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["badge.png"],
+      "matches": ["https://www.npmjs.com/*"]
+    }
+  ]
+
+}
