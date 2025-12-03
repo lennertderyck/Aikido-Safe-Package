@@ -49,9 +49,12 @@
       'main',
       '#top'
     ];
+    
+    
 
     for (const selector of selectors) {
-      const element = document.querySelector(selector);
+      // const element = document.querySelector(selector);
+      const element = document.querySelector("#top > aside")
       if (element) {
         return element;
       }
@@ -64,11 +67,10 @@
     // Create a container for the badge
     const badgeContainer = document.createElement('div');
     badgeContainer.id = 'aikido-safe-package-badge';
-    badgeContainer.className = 'aikido-badge-container';
 
     // Create the image element
     const badgeImage = document.createElement('img');
-    badgeImage.src = chrome.runtime.getURL('badge.png');
+    badgeImage.src = `https://aikido-safe-package.vercel.app/badge/${packageName}/badge.svg`;
     badgeImage.alt = 'Aikido Security Badge';
     badgeImage.className = 'aikido-badge-image';
     

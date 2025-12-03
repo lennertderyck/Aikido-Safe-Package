@@ -48,7 +48,6 @@ export const GET = async (request: NextRequest, { params }: { params: Promise<{ 
       </div>
     </div>,
     {
-      width: 1000,
       height: 100,
       fonts: [{
         name: 'Albert Sans',
