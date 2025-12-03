@@ -14,7 +14,7 @@ interface PackageAnalysis {
 //  lies.
 //  (what where you doing on NPM then?)
 
-export const GET = async (request: NextRequest, { params }: { params: { packageNameSlug: string[] } }) => {
+export const GET = async (request: NextRequest, { params }: { params: Promise<{ packageNameSlug: string[] }> }) => {
   const fontPath = path.join(process.cwd(), "src/assets/fonts/AlbertSans-Medium.ttf");
 
   const { packageNameSlug } = await params;
