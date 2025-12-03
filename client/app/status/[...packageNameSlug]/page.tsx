@@ -11,6 +11,7 @@ const Page: FC<{ params: Promise<{ packageNameSlug: string[] }>}> = async ({ par
   
   return (
     <>
+      Work in progress...
     </>
   )
 }

@@ -3,12 +3,6 @@
   "description": "Embeds safety badges on npmjs.com package pages",
   "version": "1.0",
   "manifest_version": 3,
-  "permissions": [
-    "activeTab"
-  ],
-  "host_permissions": [
-    "https://www.npmjs.com/*"
-  ],
   "content_scripts": [
     {
       "matches": ["https://www.npmjs.com/package/*"],
@@ -22,5 +16,4 @@
       "matches": ["https://www.npmjs.com/*"]
     }
   ]
-
 }

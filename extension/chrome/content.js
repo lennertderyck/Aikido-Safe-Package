@@ -10,22 +10,18 @@
     init();
   }
 
-  function init() {
-    console.log('Aikido Safe Package extension loaded');
-    
+  function init() {    
     // Get the package name from the URL
     const packageName = getPackageName();
     if (!packageName) {
       console.log('Could not determine package name');
       return;
     }
-
-    console.log('Package name:', packageName);
     
     // Find a good location to insert the badge
     const targetElement = findTargetElement();
+    targetElement.style.position = 'relative';
     if (!targetElement) {
-      console.log('Could not find target element');
       return;
     }
 
@@ -50,29 +46,25 @@
       '#top'
     ];
     
-    
-
-    for (const selector of selectors) {
-      // const element = document.querySelector(selector);
-      const element = document.querySelector("#top > aside")
-      if (element) {
-        return element;
-      }
-    }
-
-    return document.body;
+    return document.querySelector("#top > div.w-100.ph0-l.ph3.ph4-m") || document.body;
   }
 
   function embedBadge(targetElement, packageName) {
     // Create a container for the badge
     const badgeContainer = document.createElement('div');
     badgeContainer.id = 'aikido-safe-package-badge';
+    badgeContainer.style.width = '200px';
+    badgeContainer.style.position = 'absolute';
+    badgeContainer.style.top = '50%';
+    badgeContainer.style.transform = 'translateY(-50%)';
+    badgeContainer.style.right = '0px';
 
     // Create the image element
     const badgeImage = document.createElement('img');
     badgeImage.src = `https://aikido-safe-package.vercel.app/badge/${packageName}/badge.svg`;
     badgeImage.alt = 'Aikido Security Badge';
-    badgeImage.className = 'aikido-badge-image';
+    badgeImage.style.width = '100%';
+    badgeImage.style.display = 'block';
     
     // Add a title/tooltip
     badgeImage.title = `Security status for ${packageName}`;
@@ -81,7 +73,7 @@
     badgeContainer.addEventListener('click', () => {
       console.log('Badge clicked for package:', packageName);
       // You could open a popup or redirect to more detailed security info
-      window.open(`https://your-security-site.com/package/${packageName}`, '_blank');
+      window.open(`https://aikido-safe-package.vercel.app/status/${packageName}`, '_blank');
     });
 
     badgeContainer.appendChild(badgeImage);
@@ -92,7 +84,5 @@
     } else {
       targetElement.appendChild(badgeContainer);
     }
-
-    console.log('Badge embedded successfully');
   }
 })();
