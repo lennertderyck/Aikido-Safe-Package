@@ -1,4 +1,7 @@
-import { getAikidoMalwarePredictions } from "@/src/lib/queries";
+import {
+  getAikidoMalwarePredictionForPackage,
+  getGithubAdvisoryResultForPackage
+} from "@/src/lib/queries";
 import { readFileSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
@@ -21,9 +24,13 @@ export const GET = async (
   const { packageNameSlug } = await params;
   const packageName = packageNameSlug.slice(0, -1).join("/");
 
-  const packages = await getAikidoMalwarePredictions();
-  const hasResult = packages.some((p) => p.package_name === packageName);
-  const isSafe = !hasResult;
+  const githubAdvisoryResult = await getGithubAdvisoryResultForPackage(
+      packageName
+    ),
+    aikidoMalwarePrediction = await getAikidoMalwarePredictionForPackage(
+      packageName
+    ),
+    isSafe = githubAdvisoryResult.length === 0 && !aikidoMalwarePrediction;
 
   const fontData = readFileSync(fontPath);
   const svg = await satori(
@@ -31,7 +38,6 @@ export const GET = async (
       style={{
         display: "flex",
         alignItems: "center",
-        paddingRight: 30,
         fontFamily: "Roboto",
         fontWeight: 400,
         color: "white",
@@ -82,7 +88,7 @@ export const GET = async (
             fontSize: 32
           }}
         >
-          Package is {hasResult ? "malicious" : "safe"}
+          {isSafe ? "No advisories found" : "Vulnerabilities found"}
         </div>
         <div
           style={{
@@ -104,6 +110,17 @@ export const GET = async (
             width={75}
           />
         </div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width={32}
+          height={32}
+          fill="darkgray"
+          style={{ marginLeft: 16, marginRight: 20 }}
+        >
+          <path fill="none" d="M0 0h24v24H0z"></path>
+          <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+        </svg>
       </div>
     </div>,
     {

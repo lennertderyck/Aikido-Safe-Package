@@ -2,7 +2,7 @@ import LogoAikido from "@/src/assets/logos/vendors/LOGO_AIKIDO.svg";
 import LogoGithub from "@/src/assets/logos/vendors/LOGO_GITHUB.svg";
 import {
   getAikidoMalwarePredictions,
-  getGithubAdvisoryResult,
+  getGithubAdvisoryResultForPackage,
   getNpmPackageInfo
 } from "@/src/lib/queries";
 import {
@@ -25,7 +25,9 @@ const PackageStatusPage: FC<{
   const { scope, scopedPackageName } = parsePackageName(fullPackageName);
 
   const npmPackageInfoResponse = await getNpmPackageInfo(fullPackageName),
-    githubAdvisoryResponse = await getGithubAdvisoryResult(fullPackageName),
+    githubAdvisoryResponse = await getGithubAdvisoryResultForPackage(
+      fullPackageName
+    ),
     aikidoMalwarePredictionsResponse = await getAikidoMalwarePredictions(),
     hasAikidoMalwarePrediction = aikidoMalwarePredictionsResponse.some(
       (item: any) => item.package_name === fullPackageName

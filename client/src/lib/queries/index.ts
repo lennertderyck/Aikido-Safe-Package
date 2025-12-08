@@ -14,7 +14,17 @@ export const getAikidoMalwarePredictions = async () => {
   ).json()) as unknown as Promise<Aikido.MalwarePrediction[]>;
 };
 
-export const getGithubAdvisoryResult = async (packageName: string) => {
+export const getAikidoMalwarePredictionForPackage = async (
+  packageName: string
+) => {
+  return (await getAikidoMalwarePredictions()).find(
+    (scannedPackage) => scannedPackage.package_name === packageName
+  );
+};
+
+export const getGithubAdvisoryResultForPackage = async (
+  packageName: string
+) => {
   const TYPE = "malware";
 
   return (await (
