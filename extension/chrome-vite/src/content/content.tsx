@@ -60,5 +60,19 @@ createRoot(container()!).render(
                 style={{ width: "100%", display: "block" }}
             />
         </a>
+        <button
+            onClick={() => {
+                console.log({
+                    chrome,
+                    sidepanel: chrome.sidePanel,
+                    runtime: chrome.runtime.sendMessage
+                });
+                chrome.runtime.sendMessage({
+                    action: "OPEN_SIDE_PANEL"
+                });
+            }}
+        >
+            Chrome
+        </button>
     </StrictMode>
 );

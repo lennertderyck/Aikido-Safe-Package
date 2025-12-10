@@ -9,16 +9,16 @@ export default defineManifest({
     // icons: {
     //     48: "public/logo.png"
     // },
-    // action: {
-    //     default_icon: {
-    //         48: "public/logo.png"
-    //     },
-    //     default_popup: "src/popup/index.html"
-    // },
-    // permissions: ["sidePanel", "contentSettings"],
-    // side_panel: {
-    //     default_path: "src/sidepanel/index.html"
-    // },
+    action: {
+        default_icon: {
+            48: "public/logo.png"
+        },
+        default_title: "PackageGuard"
+    },
+    permissions: ["sidePanel", "contentSettings", "contextMenus"],
+    side_panel: {
+        default_path: "src/sidepanel/index.html"
+    },
     content_scripts: [
         {
             matches: ["https://www.npmjs.com/package/*"],
@@ -34,5 +34,9 @@ export default defineManifest({
         //     resources: ["badge.png"],
         //     matches: ["https://www.npmjs.com/*"]
         // }
-    ]
+    ],
+    background: {
+        service_worker: "./src/background/service-worker.ts",
+        type: "module"
+    }
 });
