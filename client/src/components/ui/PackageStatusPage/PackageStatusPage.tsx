@@ -7,6 +7,7 @@ import {
 import { parseRepositoryUrl } from "@/src/lib/utils/general";
 import { getPackageInfoFromUrl } from "@shared/parsers";
 import className from "classnames";
+import dayjs from "dayjs";
 import { ArrowRight, Code, Globe2, Package } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -37,9 +38,15 @@ const PackageStatusPage: FC<{
     scopedPackageName
   } = packageInfoFromSlug;
 
-  const npmPackageInfoResponse = await getNpmPackageInfo(
+  const packageVersion = packageInfoFromSlug.version || "latest";
+
+  const npmPackageVersionInfoResponse = await getNpmPackageInfo(
       packageInfoFromSlug.name,
-      packageInfoFromSlug.version || "latest"
+      packageVersion
+    ),
+    npmPackageInfoResponse = await getNpmPackageInfo(
+      packageInfoFromSlug.name,
+      undefined
     ),
     githubAdvisoryResponse = await getGithubAdvisoryResultForPackage(
       fullPackageName
@@ -47,14 +54,28 @@ const PackageStatusPage: FC<{
     aikidoMalwarePredictionsResponse = await getAikidoMalwarePredictions(),
     hasAikidoMalwarePrediction = aikidoMalwarePredictionsResponse.some(
       (item: any) => item.package_name === fullPackageName
-    );
+    ),
+    updatedAt =
+      npmPackageInfoResponse.time[npmPackageVersionInfoResponse.version],
+    packageIsOlderThan24h = dayjs().diff(dayjs(updatedAt), "hour") > 24;
 
   const ADVISORIES = [
     {
       name: "NPM",
       about: "Package age",
       url: `https://www.npmjs.com/package/${fullPackageName}?activeTab=versions`,
-      resolvedResult: ["that package is less than 24h old"],
+      resolvedResult: !packageIsOlderThan24h
+        ? ["that package is less than 24h old"]
+        : [],
+      logoAsset: LOGO_NPM_MARK
+    },
+    {
+      name: "NPM",
+      about: "Repository info",
+      url: `https://www.npmjs.com/package/${fullPackageName}`,
+      resolvedResult: !npmPackageVersionInfoResponse?.repository?.url
+        ? ["that package has no public repository"]
+        : [],
       logoAsset: LOGO_NPM_MARK
     },
     {
@@ -86,18 +107,19 @@ const PackageStatusPage: FC<{
       name: "Code",
       label: "GitHub",
       url:
-        npmPackageInfoResponse?.repository &&
-        npmPackageInfoResponse?.repository.url
-          ? parseRepositoryUrl(npmPackageInfoResponse?.repository?.url)?.href
+        npmPackageVersionInfoResponse?.repository &&
+        npmPackageVersionInfoResponse?.repository.url
+          ? parseRepositoryUrl(npmPackageVersionInfoResponse?.repository?.url)
+              ?.href
           : null,
       icon: Code
     },
     {
       name: "Homepage",
-      label: npmPackageInfoResponse?.homepage
-        ? new URL(npmPackageInfoResponse?.homepage).host
+      label: npmPackageVersionInfoResponse?.homepage
+        ? new URL(npmPackageVersionInfoResponse?.homepage).host
         : null,
-      url: npmPackageInfoResponse?.homepage,
+      url: npmPackageVersionInfoResponse?.homepage,
       icon: Globe2
     }
   ];
@@ -118,27 +140,31 @@ const PackageStatusPage: FC<{
                 {scopedPackageName}
               </span>
             </h1>
-            <h2 className="mt-2">version {npmPackageInfoResponse.version}</h2>
+            <h2 className="mt-2 bg-white/10 p-1 px-4 w-fit rounded-full">
+              {packageVersion}
+            </h2>
           </div>
           <ul className="divide-y divide-white/20 border border-white/20 rounded-xl px-2">
-            {SOURCES.filter((source) => !!source.url).map((source) => (
-              <li key={source.name} className="py-2">
-                <Link
-                  href={source.url!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 hover:bg-white/5 py-2 px-4 rounded-sm transition-colors"
-                >
-                  <source.icon size={20} />
-                  <div>
-                    <h4 className="text-white/90 text-sm leading-4">
-                      {source.name}
-                    </h4>
-                    <p className=" font-semibold leading-4">{source.label}</p>
-                  </div>
-                </Link>
-              </li>
-            ))}
+            {SOURCES.filter((source) => !!source.url).map(
+              (source, sourceIndex) => (
+                <li key={sourceIndex} className="py-2">
+                  <Link
+                    href={source.url!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 hover:bg-white/5 py-2 px-4 rounded-sm transition-colors"
+                  >
+                    <source.icon size={20} />
+                    <div>
+                      <h4 className="text-white/90 text-sm leading-4">
+                        {source.name}
+                      </h4>
+                      <p className=" font-semibold leading-4">{source.label}</p>
+                    </div>
+                  </Link>
+                </li>
+              )
+            )}
           </ul>
         </aside>
         <main className="col-span-8">
@@ -152,9 +178,9 @@ const PackageStatusPage: FC<{
 
           <h3 className="text-xl font-bold mb-4">Advisories</h3>
           <div className="*:border *:border-white/25 space-y-4">
-            {ADVISORIES.map((advisory) => (
+            {ADVISORIES.map((advisory, advisoryIndex) => (
               <Link
-                key={advisory.name}
+                key={advisoryIndex}
                 href={advisory.url}
                 target="_blank"
                 rel="noopener noreferrer"
