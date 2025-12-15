@@ -10,7 +10,8 @@
         "module": "ESNext",
         "moduleResolution": "bundler",
         "paths": {
-            "@/*": ["src/*"]
+            "@/*": ["src/*"],
+            "@shared/*": ["../../shared/*"]
         },
         "types": ["vite/client", "chrome"],
         "allowImportingTsExtensions": true,

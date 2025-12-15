@@ -1,7 +1,10 @@
 import {
   getAikidoMalwarePredictionForPackage,
-  getGithubAdvisoryResultForPackage
+  getGithubAdvisoryResultForPackage,
+  getNpmPackageInfo
 } from "@/src/lib/queries";
+import { getPackageInfoFromUrl } from "@shared/parsers";
+import dayjs from "dayjs";
 import { readFileSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
@@ -16,21 +19,61 @@ export const GET = async (
   request: NextRequest,
   { params }: { params: Promise<{ packageNameSlug: string[] }> }
 ) => {
+  const { packageNameSlug } = await params;
+
   const fontPath = path.join(
     process.cwd(),
     "src/assets/fonts/AlbertSans-Medium.ttf"
   );
 
-  const { packageNameSlug } = await params;
-  const packageName = packageNameSlug.slice(0, -1).join("/");
+  const joinedPackageName = packageNameSlug.slice(0, -1).join("/");
+  const packageInfo = getPackageInfoFromUrl(`/package/${joinedPackageName}`);
 
   const githubAdvisoryResult = await getGithubAdvisoryResultForPackage(
-      packageName
+      packageInfo?.parsed || ""
     ),
     aikidoMalwarePrediction = await getAikidoMalwarePredictionForPackage(
-      packageName
+      joinedPackageName
     ),
-    isSafe = githubAdvisoryResult.length === 0 && !aikidoMalwarePrediction;
+    npmPackageVersionInfo = await getNpmPackageInfo(
+      packageInfo?.name || "",
+      packageInfo?.version || undefined
+    ),
+    npmPackageInfo = await getNpmPackageInfo(
+      packageInfo?.name || "",
+      undefined
+    ),
+    hasGithubAdvisory = githubAdvisoryResult.length > 0,
+    hasAikidoMalwarePrediction = !!aikidoMalwarePrediction,
+    updatedAt = npmPackageInfo.time[npmPackageVersionInfo.version],
+    packageIsOlderThan24h = dayjs().diff(dayjs(updatedAt), "hour") > 24;
+
+  const factors = [
+    {
+      descr: "Vulnerabilities found",
+      condition: hasGithubAdvisory || hasAikidoMalwarePrediction
+    },
+    {
+      descr: "Less than 24h old",
+      condition: !packageIsOlderThan24h
+    }
+  ];
+
+  const factor = factors.filter((factor) => factor.condition === true);
+  const isSafe = factor.length === 0;
+  const label =
+    factor.length === 0
+      ? "No advisories found"
+      : factor.length === 1
+      ? factor[0].descr
+      : "Vulnerabilities found";
+
+  console.log({
+    factor,
+    hasGithubAdvisory,
+    hasAikidoMalwarePrediction,
+    d: hasAikidoMalwarePrediction || hasGithubAdvisory
+  });
 
   const fontData = readFileSync(fontPath);
   const svg = await satori(
@@ -88,7 +131,7 @@ export const GET = async (
             fontSize: 32
           }}
         >
-          {isSafe ? "No advisories found" : "Vulnerabilities found"}
+          {label}
         </div>
         <div
           style={{

@@ -11,11 +11,11 @@ chrome.runtime.onInstalled.addListener((details) => {
             chrome.runtime.getManifest().version
         );
     }
-    chrome.contextMenus.create({
-        id: "openSidePanel",
-        title: "Open side panel",
-        contexts: ["all"]
-    });
+    // chrome.contextMenus.create({
+    //     id: "openSidePanel",
+    //     title: "Open side panel",
+    //     contexts: ["all"]
+    // });
 });
 
 chrome.tabs.onActivated.addListener(function (activeInfo) {

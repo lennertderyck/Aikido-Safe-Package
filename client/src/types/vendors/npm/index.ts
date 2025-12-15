@@ -6,5 +6,6 @@ namespace Npm {
       url: string;
     };
     homepage: string;
+    time: Record<string, string>;
   }
 }

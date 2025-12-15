@@ -1,6 +1,13 @@
-export const getNpmPackageInfo = async (packageName: string) => {
+export const getNpmPackageInfo = async (
+  packageName: string,
+  packageVersion: string | undefined
+) => {
+  const slug = packageVersion
+    ? `${packageName}/${packageVersion}`
+    : packageName;
+
   return (await (
-    await fetch(`https://registry.npmjs.org/${packageName}/latest`, {
+    await fetch(`https://registry.npmjs.org/${slug}`, {
       cache: "no-store"
     })
   ).json()) as unknown as Promise<Npm.PackageInfo>;

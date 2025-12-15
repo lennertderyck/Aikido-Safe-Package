@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "classnames": "^2.5.1",
+    "dayjs": "^1.11.19",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-promise": "^7.2.1",
     "lucide-react": "^0.556.0",

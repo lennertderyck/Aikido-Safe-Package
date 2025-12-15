@@ -1,15 +1,11 @@
-import LogoAikido from "@/src/assets/logos/vendors/LOGO_AIKIDO.svg";
-import LogoGithub from "@/src/assets/logos/vendors/LOGO_GITHUB.svg";
+import { LOGO_AIKIDO, LOGO_GITHUB, LOGO_NPM_MARK } from "@/src/assets";
 import {
   getAikidoMalwarePredictions,
   getGithubAdvisoryResultForPackage,
   getNpmPackageInfo
 } from "@/src/lib/queries";
-import {
-  getPackageNameFromSlugArray,
-  parsePackageInfoFromSlug,
-  parseRepositoryUrl
-} from "@/src/lib/utils/general";
+import { parseRepositoryUrl } from "@/src/lib/utils/general";
+import { getPackageInfoFromUrl } from "@shared/parsers";
 import className from "classnames";
 import { ArrowRight, Code, Globe2, Package } from "lucide-react";
 import Image from "next/image";
@@ -20,12 +16,31 @@ const PackageStatusPage: FC<{
   params: Promise<{ packageNameSlug: string[] }>;
 }> = async ({ params }) => {
   const { packageNameSlug } = await params;
+  const packagePath = packageNameSlug.join("/");
+  const packageInfoFromSlug = getPackageInfoFromUrl(`/package/${packagePath}`);
 
-  const fullPackageName = getPackageNameFromSlugArray(packageNameSlug);
-  const { scope, scopedPackageName } =
-    parsePackageInfoFromSlug(fullPackageName);
+  if (!packageInfoFromSlug) {
+    return (
+      <main className="mx-auto max-w-7xl py-24 px-24">
+        <h1 className="text-3xl font-bold">Package not found</h1>
+        <p className="mt-4">
+          We could not find the package you are looking for. Please check the
+          package name and try again.
+        </p>
+      </main>
+    );
+  }
 
-  const npmPackageInfoResponse = await getNpmPackageInfo(fullPackageName),
+  const {
+    scope,
+    name: fullPackageName,
+    scopedPackageName
+  } = packageInfoFromSlug;
+
+  const npmPackageInfoResponse = await getNpmPackageInfo(
+      packageInfoFromSlug.name,
+      packageInfoFromSlug.version || "latest"
+    ),
     githubAdvisoryResponse = await getGithubAdvisoryResultForPackage(
       fullPackageName
     ),
@@ -36,20 +51,27 @@ const PackageStatusPage: FC<{
 
   const ADVISORIES = [
     {
+      name: "NPM",
+      about: "Package age",
+      url: `https://www.npmjs.com/package/${fullPackageName}?activeTab=versions`,
+      resolvedResult: ["that package is less than 24h old"],
+      logoAsset: LOGO_NPM_MARK
+    },
+    {
       name: "GitHub",
       about: "GitHub Advisory Database",
       url: "https://github.com/advisories?query=" + fullPackageName,
       resolvedResult: githubAdvisoryResponse?.map(
         (gitHubadvisory) => gitHubadvisory.type
       ),
-      logoAsset: LogoGithub
+      logoAsset: LOGO_GITHUB
     },
     {
       name: "Aikido",
       about: "Malware predictions list",
       url: "https://intel.aikido.dev/packages/npm/" + fullPackageName,
       resolvedResult: hasAikidoMalwarePrediction ? ["malware"] : [],
-      logoAsset: LogoAikido
+      logoAsset: LOGO_AIKIDO
     }
   ];
 
@@ -63,9 +85,11 @@ const PackageStatusPage: FC<{
     {
       name: "Code",
       label: "GitHub",
-      url: npmPackageInfoResponse?.repository
-        ? parseRepositoryUrl(npmPackageInfoResponse?.repository?.url)?.href
-        : null,
+      url:
+        npmPackageInfoResponse?.repository &&
+        npmPackageInfoResponse?.repository.url
+          ? parseRepositoryUrl(npmPackageInfoResponse?.repository?.url)?.href
+          : null,
       icon: Code
     },
     {
