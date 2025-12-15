@@ -68,13 +68,6 @@ export const GET = async (
       ? factor[0].descr
       : "Vulnerabilities found";
 
-  console.log({
-    factor,
-    hasGithubAdvisory,
-    hasAikidoMalwarePrediction,
-    d: hasAikidoMalwarePrediction || hasGithubAdvisory
-  });
-
   const fontData = readFileSync(fontPath);
   const svg = await satori(
     <div

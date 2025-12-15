@@ -88,7 +88,6 @@ import { URLPattern } from "urlpattern-polyfill";
 
         // Optional: Make it clickable to show more info
         badgeContainer.addEventListener("click", () => {
-            console.log("Badge clicked for package:", packageName);
             // You could open a popup or redirect to more detailed security info
             window.open(
                 `https://aikido-safe-package.vercel.app/status/${packageName}`,
