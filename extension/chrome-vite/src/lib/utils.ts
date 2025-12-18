@@ -1,13 +1,8 @@
 import { match } from "path-to-regexp";
 
-export const getPackageInfoFromUrl = (
-    pathname: string = window.location.pathname
-) => {
-    // Support both regular packages (/package/forever) and scoped packages (/package/@scope/package-name)
-    const fn = match("/package{/:scope}/:name{/v/:version}", {
-        decode: decodeURIComponent
-    });
-    const result = fn(pathname);
+export const getPackageInfoFromUrl = (path = window.location.pathname) => {
+    const fn = match("/package{/:scope}/:name{/v/:version}");
+    const result = fn(path);
 
     if (!result) return null;
     else {
@@ -17,6 +12,10 @@ export const getPackageInfoFromUrl = (
 
         return {
             name: fullPackageName,
+            scope,
+            scopedPackageName: fullPackageName.startsWith("@")
+                ? name
+                : fullPackageName,
             version: result.params.version
                 ? String(result.params.version)
                 : null,

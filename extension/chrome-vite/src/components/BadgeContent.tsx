@@ -1,6 +1,5 @@
+import { getPackageInfoFromUrl } from "@/lib/utils";
 import { FC } from "react";
-
-import { getPackageInfoFromUrl } from "@shared/parsers";
 
 const BadgeContent: FC = () => {
     const packageInfo = getPackageInfoFromUrl();

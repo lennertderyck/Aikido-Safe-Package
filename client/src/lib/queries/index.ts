@@ -1,4 +1,7 @@
-export const getNpmPackageInfo = async (
+import dayjs from "dayjs";
+import { getPackageVulnerabilityTypeFromGithubAdvisory } from "../vendors/github";
+
+export const getNpmPackageVersionInfo = async (
   packageName: string,
   packageVersion: string | undefined
 ) => {
@@ -12,6 +15,9 @@ export const getNpmPackageInfo = async (
     })
   ).json()) as unknown as Promise<Npm.PackageInfo>;
 };
+
+export const getNpmPackageInfo = async (packageName: string) =>
+  getNpmPackageVersionInfo(packageName, undefined);
 
 export const getAikidoMalwarePredictions = async () => {
   return (await (
@@ -46,4 +52,63 @@ export const getGithubAdvisoryResultForPackage = async (
       }
     )
   ).json()) as unknown as GitHubSecurity.AdvisoryResponse[];
+};
+
+export const getPackageVulnerabilitiesInfo = async (
+  packageName: string,
+  version: string
+) => {
+  const response = await Promise.all([
+    getNpmPackageVersionInfo(packageName, version),
+    getNpmPackageInfo(packageName),
+    getGithubAdvisoryResultForPackage(packageName, version),
+    getAikidoMalwarePredictionForPackage(packageName)
+  ]);
+
+  const [
+    npmPackageVersionInfo,
+    npmPackageInfo,
+    githubAdvisoryResponse,
+    aikidoMalwarePrediction
+  ] = response;
+
+  const hasRepositoryUrl = npmPackageVersionInfo?.repository?.url !== undefined;
+  const updatedAt = npmPackageInfo.time[npmPackageVersionInfo.version],
+    packageIsOlderThan24h = dayjs().diff(dayjs(updatedAt), "hour") > 24;
+
+  const advisorySources = [
+    {
+      name: "NPM",
+      advisories: [
+        !hasRepositoryUrl ? { type: "untrusted", reason: "NO_REPO" } : null,
+        !packageIsOlderThan24h
+          ? { type: "untrusted", reason: "AGE_MIN_DAY" }
+          : null
+      ].filter(Boolean)
+    },
+    {
+      name: "GITHUB",
+      advisories: [
+        ...githubAdvisoryResponse.map((advisory) => ({
+          type: getPackageVulnerabilityTypeFromGithubAdvisory(advisory)
+        }))
+      ].filter(Boolean)
+    },
+    {
+      name: "AIKIDO",
+      advisories: aikidoMalwarePrediction
+        ? [{ type: "malware", reason: "PREDICT" }]
+        : []
+    }
+  ];
+
+  return {
+    name: packageName,
+    version: version,
+    isVulnerable: advisorySources.some(
+      (source) => source.advisories.length > 0
+    ),
+    advisorySources,
+    about: {}
+  };
 };

@@ -2,7 +2,8 @@ import { LOGO_AIKIDO, LOGO_GITHUB, LOGO_NPM_MARK } from "@/src/assets";
 import {
   getAikidoMalwarePredictions,
   getGithubAdvisoryResultForPackage,
-  getNpmPackageInfo
+  getNpmPackageInfo,
+  getNpmPackageVersionInfo
 } from "@/src/lib/queries";
 import { parseRepositoryUrl } from "@/src/lib/utils/general";
 import className from "classnames";
@@ -40,14 +41,11 @@ const PackageStatusPage: FC<{
 
   const packageVersion = packageInfoFromSlug.version || "latest";
 
-  const npmPackageVersionInfoResponse = await getNpmPackageInfo(
+  const npmPackageVersionInfoResponse = await getNpmPackageVersionInfo(
       packageInfoFromSlug.name,
       packageVersion
     ),
-    npmPackageInfoResponse = await getNpmPackageInfo(
-      packageInfoFromSlug.name,
-      undefined
-    ),
+    npmPackageInfoResponse = await getNpmPackageInfo(packageInfoFromSlug.name),
     githubAdvisoryResponse = await getGithubAdvisoryResultForPackage(
       fullPackageName,
       packageVersion

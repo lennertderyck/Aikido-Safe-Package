@@ -15,13 +15,7 @@ export default defineManifest({
         },
         default_title: "PackageGuard"
     },
-    permissions: [
-        "sidePanel",
-        "contentSettings",
-        "contextMenus",
-        "activeTab",
-        "tabs"
-    ],
+    permissions: ["sidePanel", "contextMenus", "activeTab", "tabs"],
     side_panel: {
         default_path: "src/sidepanel/index.html"
     },
