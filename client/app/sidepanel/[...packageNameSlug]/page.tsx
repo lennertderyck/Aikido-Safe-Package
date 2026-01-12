@@ -1,4 +1,7 @@
 import { LOGO_AIKIDO, LOGO_GITHUB, LOGO_NPM_MARK } from "@/src/assets";
+import LinkList, {
+  LinkListItem
+} from "@/src/components/element/LinkList/LinkList";
 import PackageVersionbadge from "@/src/components/element/PackageVersionbadge/PackageVersionbadge";
 import { getPackageVulnerabilitiesInfo } from "@/src/lib/queries";
 import { getPackageInfoFromUrl } from "@/src/lib/utils/parsers";
@@ -115,41 +118,42 @@ const Page: FC<{
           height={46}
         />
         <h3 className="text-xl font-bold mb-4">Advisories</h3>
-        <div className="*:border *:border-white/25 space-y-4">
+        <LinkList>
           {sortedAdvisories.map((advisory, advisoryIndex) => (
-            <Link
-              key={advisoryIndex}
-              href={advisory.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={classNames(
-                advisory.resolvedResult.length === 0 &&
-                  "opacity-60 pointer-events-none",
-                "p-5 rounded-xl flex justify-between border border-white/20 align-baseline hover:bg-white/5 transition-colors"
-              )}
-            >
-              <div className="flex gap-5">
-                <Image
-                  src={advisory.logoAsset}
-                  alt="Logo Aikido"
-                  className="size-5 translate-y-1"
-                />
-                <div>
-                  <h4>
-                    <span className="font-bold">{advisory.name}</span> /{" "}
-                    {advisory.about}
-                  </h4>
-                  <p>
-                    {advisory.resolvedResult.length === 0
-                      ? "No advisory found"
-                      : advisory.resolvedResult}
-                  </p>
+            <LinkListItem asChild key={advisoryIndex}>
+              <Link
+                key={advisoryIndex}
+                href={advisory.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={classNames(
+                  advisory.resolvedResult.length === 0 &&
+                    "**:opacity-85 pointer-events-none"
+                )}
+              >
+                <div className="flex gap-5">
+                  <Image
+                    src={advisory.logoAsset}
+                    alt="Logo Aikido"
+                    className="size-5 translate-y-1"
+                  />
+                  <div>
+                    <h4>
+                      <span className="font-bold">{advisory.name}</span> /{" "}
+                      {advisory.about}
+                    </h4>
+                    <p>
+                      {advisory.resolvedResult.length === 0
+                        ? "No advisory found"
+                        : advisory.resolvedResult}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              {advisory.resolvedResult.length !== 0 && <ArrowRight />}
-            </Link>
+                {advisory.resolvedResult.length !== 0 && <ArrowRight />}
+              </Link>
+            </LinkListItem>
           ))}
-        </div>
+        </LinkList>
       </div>
       <div className="flex gap-2 bg-white/10 rounded-b-xl rounded-t-sm">
         <Link

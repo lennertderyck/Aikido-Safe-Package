@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.19",
     "eslint-config-prettier": "^10.1.8",

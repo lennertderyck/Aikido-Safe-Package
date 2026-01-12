@@ -39,7 +39,7 @@ chrome.runtime.onInstalled.addListener((details) => {
     }
     chrome.contextMenus.create({
         id: "OPEN_SIDE_PANEL",
-        title: "Open side panel",
+        title: "Inspect with PackageGuard",
         contexts: ["all"]
     });
 });

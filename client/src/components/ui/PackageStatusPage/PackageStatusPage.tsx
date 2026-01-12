@@ -1,12 +1,13 @@
 import { LOGO_AIKIDO, LOGO_GITHUB, LOGO_NPM_MARK } from "@/src/assets";
 import { getPackageVulnerabilitiesInfo } from "@/src/lib/queries";
 import { parseRepositoryUrl } from "@/src/lib/utils/general";
-import className from "classnames";
-import { ArrowRight, Code, Globe2, Package } from "lucide-react";
+import { default as classNames } from "classnames";
+import { ArrowRight, ArrowUpRight, Code, Globe2, Package } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { FC } from "react";
 import { getPackageInfoFromUrl } from "../../../lib/utils/parsers";
+import LinkList, { LinkListItem } from "../../element/LinkList/LinkList";
 import PackageVersionbadge from "../../element/PackageVersionbadge/PackageVersionbadge";
 
 const PackageStatusPage: FC<{
@@ -154,12 +155,17 @@ const PackageStatusPage: FC<{
                     rel="noopener noreferrer"
                     className="flex items-center gap-4 hover:bg-white/5 py-2 px-4 rounded-sm transition-colors"
                   >
-                    <source.icon size={20} />
                     <div>
+                      <source.icon size={20} />
+                    </div>
+                    <div className="flex-1">
                       <h4 className="text-white/90 text-sm leading-4">
                         {source.name}
                       </h4>
                       <p className="font-semibold leading-4">{source.label}</p>
+                    </div>
+                    <div>
+                      <ArrowUpRight />
                     </div>
                   </Link>
                 </li>
@@ -171,41 +177,42 @@ const PackageStatusPage: FC<{
           <h3 className="text-xl font-bold mb-4">Status</h3>
           <Image src={badgeSource} alt="" width={250} height={46} />
           <h3 className="text-xl font-bold mb-4">Advisories</h3>
-          <div className="*:border *:border-white/25 space-y-4">
+          <LinkList>
             {sortedAdvisories.map((advisory, advisoryIndex) => (
-              <Link
-                key={advisoryIndex}
-                href={advisory.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={className(
-                  advisory.resolvedResult.length === 0 &&
-                    "opacity-60 pointer-events-none",
-                  "p-5 rounded-xl flex justify-between border border-white/20 align-baseline hover:bg-white/5 transition-colors"
-                )}
-              >
-                <div className="flex gap-5">
-                  <Image
-                    src={advisory.logoAsset}
-                    alt="Logo Aikido"
-                    className="size-5 translate-y-1"
-                  />
-                  <div>
-                    <h4>
-                      <span className="font-bold">{advisory.name}</span> /{" "}
-                      {advisory.about}
-                    </h4>
-                    <p>
-                      {advisory.resolvedResult.length === 0
-                        ? "No advisory found"
-                        : advisory.resolvedResult}
-                    </p>
+              <LinkListItem asChild key={advisoryIndex}>
+                <Link
+                  key={advisoryIndex}
+                  href={advisory.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={classNames(
+                    advisory.resolvedResult.length === 0 &&
+                      "**:opacity-85 pointer-events-none"
+                  )}
+                >
+                  <div className="flex gap-5 w-full">
+                    <Image
+                      src={advisory.logoAsset}
+                      alt="Logo Aikido"
+                      className="size-5 translate-y-1"
+                    />
+                    <div className="flex-1">
+                      <h4>
+                        <span className="font-bold">{advisory.name}</span> /{" "}
+                        {advisory.about}
+                      </h4>
+                      <p>
+                        {advisory.resolvedResult.length === 0
+                          ? "No advisory found"
+                          : advisory.resolvedResult}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                {advisory.resolvedResult.length !== 0 && <ArrowRight />}
-              </Link>
+                  {advisory.resolvedResult.length !== 0 && <ArrowRight />}
+                </Link>
+              </LinkListItem>
             ))}
-          </div>
+          </LinkList>
         </main>
       </div>
     </main>
