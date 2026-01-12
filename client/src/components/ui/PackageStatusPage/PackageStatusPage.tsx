@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FC } from "react";
 import { getPackageInfoFromUrl } from "../../../lib/utils/parsers";
+import PackageVersionbadge from "../../element/PackageVersionbadge/PackageVersionbadge";
 
 const PackageStatusPage: FC<{
   params: Promise<{ packageNameSlug: string[] }>;
@@ -141,9 +142,7 @@ const PackageStatusPage: FC<{
                 {packageInfoFromSlug.name.scoped}
               </span>
             </h1>
-            <h2 className="mt-2 bg-white/10 p-1 px-4 w-fit rounded-full">
-              {packageVersion}
-            </h2>
+            <PackageVersionbadge>{packageVersion}</PackageVersionbadge>
           </div>
           <ul className="divide-y divide-white/15 border border-white/15 rounded-xl px-2">
             {SOURCES.filter((source) => !!source.url).map(
@@ -160,7 +159,7 @@ const PackageStatusPage: FC<{
                       <h4 className="text-white/90 text-sm leading-4">
                         {source.name}
                       </h4>
-                      <p className=" font-semibold leading-4">{source.label}</p>
+                      <p className="font-semibold leading-4">{source.label}</p>
                     </div>
                   </Link>
                 </li>

@@ -1,5 +1,10 @@
+import { LOGO_AIKIDO, LOGO_GITHUB, LOGO_NPM_MARK } from "@/src/assets";
+import PackageVersionbadge from "@/src/components/element/PackageVersionbadge/PackageVersionbadge";
+import { getPackageVulnerabilitiesInfo } from "@/src/lib/queries";
 import { getPackageInfoFromUrl } from "@/src/lib/utils/parsers";
-import { ArrowUpRight } from "lucide-react";
+import classNames from "classnames";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { FC } from "react";
 
@@ -10,13 +15,80 @@ const Page: FC<{
 }> = async ({ params }) => {
   const { packageNameSlug } = await params;
   const packagePath = packageNameSlug.join("/");
-  const packageInfoFromSlug = getPackageInfoFromUrl(`/package/${packagePath}`);
+  const packageInfoFromSlug = getPackageInfoFromUrl(`/${packagePath}`);
+  const packageVersion = packageInfoFromSlug?.version || "latest";
+  const badgeSource = [
+    "/badge",
+    packageInfoFromSlug?.packageName,
+    "v",
+    packageVersion,
+    "badge.svg"
+  ].join("/");
 
-  console.log(packageInfoFromSlug);
+  const vulnerabilitiesInfo = await getPackageVulnerabilitiesInfo(
+    packageInfoFromSlug?.packageName || "",
+    packageInfoFromSlug?.version || "latest"
+  );
+  const npmPackageVersionInfoResponse =
+      vulnerabilitiesInfo.about.packageVersion,
+    githubAdvisoryResponse = vulnerabilitiesInfo.about.githubAdvisories,
+    hasAikidoMalwarePrediction =
+      vulnerabilitiesInfo.about.aikidoMalwarePrediction;
+
+  const ADVISORIES = [
+    {
+      name: "NPM",
+      about: "Package age",
+      url: `https://www.npmjs.com/package/${packageInfoFromSlug?.packageName}?activeTab=versions`,
+      resolvedResult: !vulnerabilitiesInfo.reachedAgeTreshold
+        ? ["Package (version) is less than 24h old"]
+        : [],
+      logoAsset: LOGO_NPM_MARK
+    },
+    {
+      name: "NPM",
+      about: "Repository info",
+      url: `https://www.npmjs.com/package/${packageInfoFromSlug?.packageName}`,
+      resolvedResult: !npmPackageVersionInfoResponse?.repository?.url
+        ? ["Package has no public repository"]
+        : [],
+      logoAsset: LOGO_NPM_MARK
+    },
+    {
+      name: "GitHub",
+      about: "GitHub Advisory Database",
+      url: `https://github.com/advisories?query=${encodeURIComponent(
+        `ecosystem:npm ${githubAdvisoryResponse
+          .map((advisory) => advisory.ghsa_id)
+          .join(" ")}`
+      )}`,
+      resolvedResult: githubAdvisoryResponse.length
+        ? [
+            githubAdvisoryResponse.length === 1
+              ? "Found 1 advisory"
+              : `Found ${githubAdvisoryResponse.length} advisories`
+          ]
+        : [],
+      logoAsset: LOGO_GITHUB
+    },
+    {
+      name: "Aikido",
+      about: "Malware predictions list",
+      url:
+        "https://intel.aikido.dev/packages/npm/" +
+        packageInfoFromSlug?.packageName,
+      resolvedResult: hasAikidoMalwarePrediction ? ["Malware found"] : [],
+      logoAsset: LOGO_AIKIDO
+    }
+  ];
+
+  const sortedAdvisories = ADVISORIES.sort((a, b) => {
+    return b.resolvedResult.length - a.resolvedResult.length;
+  });
 
   return (
-    <div className="p-1 flex flex-col justify-between h-screen">
-      <div className="bg-purple-900/25 p-5 rounded-t-xl rounded-b-sm">
+    <div className="p-1 flex flex-col h-screen">
+      <div className="bg-white/10 p-5 rounded-t-xl rounded-b-sm">
         <h1 className="whitespace-pre-wrap text-balance">
           {packageInfoFromSlug?.scope && (
             <>
@@ -24,20 +96,67 @@ const Page: FC<{
               <br />
             </>
           )}
-          <span className=" break-balance max-w-[12ch] font-semibold  leading-6">
-            <span className="text-4xl">{packageInfoFromSlug?.name.scoped}</span>
-            <h2 className="mt-2 inline-block py-1 px-3 bg-purple-950 rounded-full ml-4">
+          <span className="break-balance max-w-[12ch] leading-6">
+            <span className="text-4xl font-semibold">
+              {packageInfoFromSlug?.name.scoped}
+            </span>
+            <PackageVersionbadge className="inline-block align-top ml-4">
               {packageInfoFromSlug?.version}
-            </h2>
+            </PackageVersionbadge>
           </span>
         </h1>
       </div>
-      <div className="flex gap-2 bg-purple-900/25 rounded-b-xl rounded-t-sm">
+      <div className="flex-1 p-5">
+        <Image
+          src={badgeSource}
+          alt=""
+          className="w-full"
+          width={300}
+          height={46}
+        />
+        <h3 className="text-xl font-bold mb-4">Advisories</h3>
+        <div className="*:border *:border-white/25 space-y-4">
+          {sortedAdvisories.map((advisory, advisoryIndex) => (
+            <Link
+              key={advisoryIndex}
+              href={advisory.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={classNames(
+                advisory.resolvedResult.length === 0 &&
+                  "opacity-60 pointer-events-none",
+                "p-5 rounded-xl flex justify-between border border-white/20 align-baseline hover:bg-white/5 transition-colors"
+              )}
+            >
+              <div className="flex gap-5">
+                <Image
+                  src={advisory.logoAsset}
+                  alt="Logo Aikido"
+                  className="size-5 translate-y-1"
+                />
+                <div>
+                  <h4>
+                    <span className="font-bold">{advisory.name}</span> /{" "}
+                    {advisory.about}
+                  </h4>
+                  <p>
+                    {advisory.resolvedResult.length === 0
+                      ? "No advisory found"
+                      : advisory.resolvedResult}
+                  </p>
+                </div>
+              </div>
+              {advisory.resolvedResult.length !== 0 && <ArrowRight />}
+            </Link>
+          ))}
+        </div>
+      </div>
+      <div className="flex gap-2 bg-white/10 rounded-b-xl rounded-t-sm">
         <Link
-          href={`https://www.npmjs.com/package/${packageInfoFromSlug?.packageName}/v/${packageInfoFromSlug?.version}`}
+          href={`/package/${packageInfoFromSlug?.packageName}/v/${packageInfoFromSlug?.version}`}
           target="_blank"
           rel="noreferrer"
-          className="flex justify-center items-center gap-2 py-2 pr-2 pl-4 w-fit "
+          className="flex justify-end items-center gap-2 py-2 pr-2 pl-4 w-full "
         >
           <span className="font-bold">Expand</span>
           <ArrowUpRight size={24} />

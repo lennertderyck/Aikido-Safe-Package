@@ -13,7 +13,10 @@ export interface PackageNameInfo {
 export const getPackageInfoFromUrl = (
   path = window.location.pathname
 ): PackageNameInfo | null => {
-  const fn = match("/package{/:scope}/:name{/v/:version}");
+  const fn = match([
+    "/package{/:scope}/:name{/v/:version}",
+    "{/:scope}/:name{/v/:version}"
+  ]);
   const result = fn(path);
 
   if (!result) return null;
